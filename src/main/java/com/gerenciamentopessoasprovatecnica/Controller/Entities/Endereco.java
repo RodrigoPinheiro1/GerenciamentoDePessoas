@@ -19,12 +19,17 @@ import java.util.UUID;
 public class Endereco {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String logradouro;
     private String cep;
     private String numero;
     private String cidade;
 
-
+    public Endereco(String logradouro, String cep, String numero, String cidade) {
+        this.logradouro = logradouro;
+        this.cep = cep;
+        this.numero = numero;
+        this.cidade = cidade;
+    }
 }
