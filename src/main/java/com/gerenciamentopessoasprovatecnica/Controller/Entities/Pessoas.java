@@ -21,17 +21,20 @@ public class Pessoas {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     private String nome;
 
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataNascimento;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Endereco> enderecos = new ArrayList<>();
 
 
-
+    public Pessoas(String nome, LocalDate dataNascimento, List<Endereco> enderecos) {
+        this.nome = nome;
+        this.dataNascimento = dataNascimento;
+        this.enderecos = enderecos;
+    }
 }

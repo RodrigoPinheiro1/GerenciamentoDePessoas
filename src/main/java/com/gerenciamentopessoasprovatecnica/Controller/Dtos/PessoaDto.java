@@ -1,5 +1,8 @@
 package com.gerenciamentopessoasprovatecnica.Controller.Dtos;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,10 +16,15 @@ import java.util.UUID;
 public class PessoaDto {
 
     private UUID id ;
+
+    @NotBlank
+    @NotNull
     private String nome;
 
+    @NotNull
     private LocalDate dataNascimento;
 
+    @Valid
     private List<EnderecoDto> enderecos;
 
 
