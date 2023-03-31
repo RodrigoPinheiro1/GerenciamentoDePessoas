@@ -1,5 +1,6 @@
 package com.gerenciamentopessoasprovatecnica.Controller.Entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,14 +23,15 @@ public class Pessoas {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String nome;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern ="dd/MM/yyyy")
     private LocalDate dataNascimento;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "pessoas")
     private List<Endereco> enderecos = new ArrayList<>();
 
 

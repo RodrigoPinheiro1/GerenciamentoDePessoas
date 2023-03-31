@@ -1,27 +1,32 @@
 package com.gerenciamentopessoasprovatecnica.Controller.service;
 
+import com.gerenciamentopessoasprovatecnica.Controller.Dtos.CadastroEnderecoDto;
 import com.gerenciamentopessoasprovatecnica.Controller.Dtos.EnderecoDto;
 import com.gerenciamentopessoasprovatecnica.Controller.Dtos.PessoaDto;
 import com.gerenciamentopessoasprovatecnica.Controller.Entities.Endereco;
 import com.gerenciamentopessoasprovatecnica.Controller.Entities.Pessoas;
+import com.gerenciamentopessoasprovatecnica.Controller.Repository.EnderecoRepository;
 import com.gerenciamentopessoasprovatecnica.Controller.Repository.PessoaRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.gerenciamentopessoasprovatecnica.Exceptions.PessoaNaoEncontrada;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class PessoaServiceImplements implements PessoaService{
+public class PessoaServiceImplements implements PessoaService {
 
     @Autowired
-    private PessoaRepository repository;
+    private PessoaRepository pessoaRepository;
+
+    @Autowired
+    private EnderecoRepository enderecoRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -30,39 +35,70 @@ public class PessoaServiceImplements implements PessoaService{
     public PessoaDto cadastro(PessoaDto dto) {
 
         Pessoas pessoas = modelMapper.map(dto, Pessoas.class);
-        repository.save(pessoas);
-        return modelMapper.map(pessoas,PessoaDto.class);
+
+        pessoas.setNome(dto.getNome());
+        pessoas.setDataNascimento(dto.getDataNascimento());
+        pessoas.getEnderecos().forEach(endereco -> endereco.setPessoas(pessoas));
+
+        pessoaRepository.save(pessoas);
+        return modelMapper.map(pessoas, PessoaDto.class);
     }
 
     @Override
-    public PessoaDto atualizacao(PessoaDto dto, UUID id) {
-
+    public PessoaDto atualizacao(PessoaDto dto, Long id) {
 
         verificaId(id);
 
-        Pessoas pessoas = repository.getReferenceById(id);
+        Pessoas pessoas = modelMapper.map(dto, Pessoas.class);
+
+        pessoas.setId(id);
         pessoas.setNome(dto.getNome());
         pessoas.setDataNascimento(dto.getDataNascimento());
-        repository.save(pessoas);
-        return modelMapper.map(pessoas,PessoaDto.class);
+
+        pessoas.getEnderecos().forEach(endereco -> endereco.setPessoas(pessoas));
+
+
+        pessoaRepository.save(pessoas);
+
+
+        return modelMapper.map(pessoas, PessoaDto.class);
     }
 
     @Override
     public Page<PessoaDto> listar(Pageable pageable) {
 
-     return repository.findAll(pageable).map(pessoas -> modelMapper.map(pessoas,PessoaDto.class));
+        return pessoaRepository.findAll(pageable).map(pessoas -> modelMapper.map(pessoas, PessoaDto.class));
 
     }
 
     @Override
-    public PessoaDto buscarPorId(UUID id) {
+    public PessoaDto buscarPorId(Long id) {
         Pessoas pessoas = verificaId(id);
-        return modelMapper.map(pessoas,PessoaDto.class);
+        return modelMapper.map(pessoas, PessoaDto.class);
 
     }
-    private Pessoas verificaId(UUID id) {
-        return repository.findById(id).orElseThrow(EntityNotFoundException::new);
+
+    private Pessoas verificaId(Long id) {
+        return pessoaRepository.findById(id).orElseThrow(PessoaNaoEncontrada::new);
     }
 
 
+    public CadastroEnderecoDto cadastrarEnderecoParaPessoa(CadastroEnderecoDto dto) {
+
+        Endereco endereco = modelMapper.map(dto, Endereco.class);
+
+        Pessoas pessoas = pessoaRepository.getReferenceById(dto.getPessoasId());
+
+        endereco.setNumero(dto.getNumero());
+        endereco.setCep(dto.getCep());
+        endereco.setCidade(dto.getCidade());
+        endereco.setLogradouro(dto.getLogradouro());
+        endereco.setPessoas(pessoas);
+
+        enderecoRepository.save(endereco);
+
+
+        return modelMapper.map(endereco, CadastroEnderecoDto.class);
+
+    }
 }

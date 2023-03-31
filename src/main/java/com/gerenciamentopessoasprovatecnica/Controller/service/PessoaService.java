@@ -10,10 +10,10 @@ public interface PessoaService {
 
     PessoaDto cadastro(PessoaDto dto);
 
-    PessoaDto atualizacao(PessoaDto dto, UUID id);
+    PessoaDto atualizacao(PessoaDto dto, Long id);
 
     Page<PessoaDto> listar (Pageable pageable);
 
-    PessoaDto buscarPorId(UUID id);
+    PessoaDto buscarPorId(Long id);
 
 }
