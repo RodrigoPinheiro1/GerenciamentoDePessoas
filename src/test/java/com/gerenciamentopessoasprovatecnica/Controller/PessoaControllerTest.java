@@ -1,14 +1,17 @@
 package com.gerenciamentopessoasprovatecnica.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gerenciamentopessoasprovatecnica.Controller.Dtos.CadastroEnderecoDto;
+import com.gerenciamentopessoasprovatecnica.Controller.Dtos.EnderecoDto;
+import com.gerenciamentopessoasprovatecnica.Controller.Dtos.PessoaDto;
 import com.gerenciamentopessoasprovatecnica.Controller.Entities.Endereco;
 import com.gerenciamentopessoasprovatecnica.Controller.Entities.Pessoas;
+import com.gerenciamentopessoasprovatecnica.Controller.Repository.EnderecoRepository;
 import com.gerenciamentopessoasprovatecnica.Controller.Repository.PessoaRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +25,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.UUID;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,83 +37,124 @@ class PessoaControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Mock
-    private Endereco endereco;
 
     @Autowired
-    private PessoaRepository repository;
+    private PessoaRepository pessoaRepository;
 
 
-    @Mock
+    @Autowired
+    private EnderecoRepository enderecoRepository;
+
+    @MockBean
+    private PessoaDto pessoaDto;
+
+    @MockBean
+    private EnderecoDto enderecoDto;
+
+
+    @MockBean
+    private CadastroEnderecoDto cadastroEnderecoDto;
+
+    private String stringId;
+
+
     private Pessoas pessoas;
 
 
-    private final UUID clientId = UUID.fromString("2fa85f64-5717-4562-b3fc-2c963f66afa6"); //id already in BD
-    private final UUID idRepetido = UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"); //id already in BD
-
-    private final URI uriForOk = URI.create("/pessoas");
-    private final URI uriForNotFound = URI.create("/pessoas/0aa00a00-0000-2000-a0aa-0a020a00aaa0");
-    private final UUID id = UUID.randomUUID();
-    private final URI uriForFound = URI.create("/pessoas/3fa85f64-5717-4562-b3fc-2c963f66afa6");
+    private final URI uriPessoas = URI.create("/pessoas");
+    private final URI uriIdNotFound = URI.create("/pessoas/0");
+    private final URI uriId = URI.create("/pessoas/");
+    private final URI uriPessoasEndereco = URI.create("/pessoas/endereco");
 
 
+
+    @BeforeAll
+    void put() {
+        Endereco endereco = new Endereco(true, "logradouro", "08568000", "2393", "poa");
+        pessoas = new Pessoas("nome", LocalDate.now(), Collections.singletonList(endereco));
+
+        pessoaRepository.save(pessoas);
+
+        stringId = String.valueOf(pessoas.getId());
+
+    }
 
     @BeforeEach
     public void setup() {
-        endereco = new Endereco( id,"logradouro","08568000","2393","poa");
-        pessoas = new Pessoas(idRepetido,"nome", LocalDate.now(),
-                Collections.singletonList(endereco));
+
+        enderecoDto = new EnderecoDto("logradouro", "08568000", true, "2393", "poa");
+        pessoaDto = new PessoaDto("nome", LocalDate.now(), Collections.singletonList(enderecoDto));
+
+        cadastroEnderecoDto = new CadastroEnderecoDto("logradouro",
+                "08568000", true, "2393", "poa", pessoas.getId());
+    }
 
 
+    @Test
+    void deveriaDevolver201ParaCadastroDeEndereçoParaPessoa() throws Exception {
+
+
+        mockMvc.perform(MockMvcRequestBuilders.post(uriPessoasEndereco)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cadastroEnderecoDto)))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
     }
 
 
     @Test
     void deveriaDevolver201ParaCadastro() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post(uriForOk)
+        mockMvc.perform(MockMvcRequestBuilders.post(uriPessoas)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pessoas)))
+                        .content(objectMapper.writeValueAsString(pessoaDto)))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
     }
+
     @Test
     void deveriaDevolver400ParaCadastroComCamposNullos() throws Exception {
-        pessoas.setNome(null);
-        mockMvc.perform(MockMvcRequestBuilders.post(uriForOk)
+        pessoaDto.setNome(null);
+        mockMvc.perform(MockMvcRequestBuilders.post(uriPessoas)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pessoas)))
+                        .content(objectMapper.writeValueAsString(pessoaDto)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
 
     @Test
-    void deveriaDevolver200AoAtualizar() throws Exception{
+    void deveriaDevolver200AoAtualizar() throws Exception {
 
-        pessoas.setNome("atualizaNome");
-        pessoas.setDataNascimento(LocalDate.now());
-        mockMvc.perform(MockMvcRequestBuilders.put(uriForFound)
+
+        pessoaDto.setId(pessoas.getId());
+        pessoaDto.setNome("atualizaNome");
+
+        //  pessoas.setDataNascimento(LocalDate.now());
+        mockMvc.perform(MockMvcRequestBuilders.put(uriId + stringId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pessoas)))
+                        .content(objectMapper.writeValueAsString(pessoaDto)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
-    @Test
-    void deveriaDevolver404AoAtualizarIdInesxistente() throws Exception{
 
-        pessoas.setNome("atualizaNome");
-        pessoas.setDataNascimento(LocalDate.now());
-        mockMvc.perform(MockMvcRequestBuilders.put(uriForFound)
+    @Test
+    void deveriaDevolver404AoAtualizarIdInesxistente() throws Exception {
+
+        pessoaDto.setNome("atualizaNome");
+        //   pessoas.setDataNascimento(LocalDate.now());
+        mockMvc.perform(MockMvcRequestBuilders.put(uriIdNotFound)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pessoas)))
+                        .content(objectMapper.writeValueAsString(pessoaDto)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
-    void listar() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get(uriForOk))
+    void listar() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get(uriPessoas))
                 .andDo(MockMvcResultHandlers.log())
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    void listarPorId() throws Exception{
+    void listarPorId() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.get(uriId+stringId))
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }
