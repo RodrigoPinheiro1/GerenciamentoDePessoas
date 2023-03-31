@@ -28,7 +28,9 @@ public class Endereco {
     @ManyToOne
     private Pessoas pessoas;
 
-    public Endereco(String logradouro, String cep, String numero, String cidade) {
+
+    public Endereco(boolean enderecoPrincipal, String logradouro, String cep, String numero, String cidade) {
+        this.enderecoPrincipal = enderecoPrincipal;
         this.logradouro = logradouro;
         this.cep = cep;
         this.numero = numero;

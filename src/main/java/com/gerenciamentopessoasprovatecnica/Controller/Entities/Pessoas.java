@@ -40,4 +40,9 @@ public class Pessoas {
         this.dataNascimento = dataNascimento;
         this.enderecos = enderecos;
     }
+
+    public Pessoas(String nome, LocalDate dataNascimento) {
+        this.nome = nome;
+        this.dataNascimento = dataNascimento;
+    }
 }

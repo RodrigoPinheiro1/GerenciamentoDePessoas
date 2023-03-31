@@ -34,4 +34,12 @@ public class CadastroEnderecoDto {
     private Long pessoasId;
 
 
+    public CadastroEnderecoDto(String logradouro, String cep, boolean enderecoPrincipal, String numero, String cidade, Long pessoasId) {
+        this.logradouro = logradouro;
+        this.cep = cep;
+        this.enderecoPrincipal = enderecoPrincipal;
+        this.numero = numero;
+        this.cidade = cidade;
+        this.pessoasId = pessoasId;
+    }
 }
