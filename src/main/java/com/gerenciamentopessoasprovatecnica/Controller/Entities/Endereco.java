@@ -1,10 +1,7 @@
 package com.gerenciamentopessoasprovatecnica.Controller.Entities;
 
 import com.gerenciamentopessoasprovatecnica.Controller.Dtos.EnderecoDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,12 +16,17 @@ import java.util.UUID;
 public class Endereco {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private boolean enderecoPrincipal;
     private String logradouro;
     private String cep;
     private String numero;
     private String cidade;
+
+    @ManyToOne
+    private Pessoas pessoas;
 
     public Endereco(String logradouro, String cep, String numero, String cidade) {
         this.logradouro = logradouro;

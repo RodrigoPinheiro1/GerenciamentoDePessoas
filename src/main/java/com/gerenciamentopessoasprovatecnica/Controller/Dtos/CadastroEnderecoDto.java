@@ -11,7 +11,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EnderecoDto {
+public class CadastroEnderecoDto {
+
 
     private Long id;
     @NotBlank
@@ -29,6 +30,8 @@ public class EnderecoDto {
     @NotNull
     private String cidade;
 
+    @NotNull
+    private Long pessoasId;
 
 
 }
