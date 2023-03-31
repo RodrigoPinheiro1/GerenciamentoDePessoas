@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +19,6 @@ import java.util.List;
 public class ControllerAdvice {
 
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(EntityNotFoundException.class)
-    public String naoEncontrado(){
-        return "Id nao existe";
-    }
 
     @Autowired
     private MessageSource messageSource;
@@ -30,11 +26,14 @@ public class ControllerAdvice {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public List<ValidacaoDto> handle (MethodArgumentNotValidException exception){
+    public MessageGlobalException handle (MethodArgumentNotValidException exception){
 
         List <ValidacaoDto> validacaoDtos = new ArrayList<>();
         List<FieldError> fieldErrors = exception.getBindingResult().getFieldErrors(); // getBindingResult faz uma vinculação com o erro
         // get field erro pega qualquer erro que estiver no primeiro
+
+        MessageGlobalException  customGlobalException = new MessageGlobalException(
+                LocalDateTime.now(),HttpStatus.BAD_REQUEST.value(), "erro de digitação", validacaoDtos);
 
         fieldErrors.forEach(fieldError -> {
             String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
@@ -43,6 +42,6 @@ public class ControllerAdvice {
             validacaoDtos.add(erro);
         });
 
-        return validacaoDtos;
+        return customGlobalException;
     }
 }
